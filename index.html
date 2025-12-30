@@ -32,12 +32,13 @@
         .plus { color: #28a745; }
         .minus { color: #dc3545; }
 
-        /* スマホ向けレイアウト調整（2列にして2行で表示） */
+        /* ★スマホ向けレイアウト調整（2列にして2行で表示） */
         @media (max-width: 600px) {
             .dashboard {
-                grid-template-columns: 1fr 1fr; /* 強制的に2列にする */
+                grid-template-columns: 1fr 1fr; /* 強制的に2列（獲得・利用 / 収支・件数）にする */
             }
-            .card .value { font-size: 20px; } /* 文字サイズを少し調整 */
+            .card .value { font-size: 18px; } /* 文字サイズを少し調整 */
+            .card { padding: 10px; }
         }
 
         /* Filters */
@@ -63,8 +64,10 @@
 
     <div class="input-section">
         <p>データの取り込み</p>
-        <div style="font-size: 13px; color: #666; margin-bottom: 10px;">
-            晴れる屋のマイページ（ポイント履歴）の文字をコピーして、下のボックスに貼り付けてください。<br>
+        <div style="font-size: 13px; color: #666; margin-bottom: 10px; line-height: 1.6;">
+            <strong>【重要】スマートフォンでご利用の方へ</strong><br>
+            スマートフォン版の表示では正しくコピーできない場合があります。<br>
+            ブラウザのメニューから<span style="color: #ea2d2d; font-weight: bold;">「PC版サイト」</span>に切り替えてから、履歴の文字を全てコピーしてください。<br>
         </div>
         <textarea id="rawInput" placeholder='ここにコピーしたテキストデータを貼り付け...'></textarea>
         <div class="btn-group">
@@ -141,7 +144,7 @@
 
         localStorage.setItem(STORAGE_KEY, rawText);
 
-        // ブックマークレット（JSON）機能を削除し、テキスト解析のみ実行
+        // テキスト解析を実行
         allData = parseRawText(rawText);
 
         setupYearFilter(allData);
