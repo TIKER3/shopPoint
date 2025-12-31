@@ -38,6 +38,9 @@
             .dashboard { grid-template-columns: 1fr 1fr; }
             .card .value { font-size: 18px; }
             .card { padding: 10px; }
+            .report-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .report-controls { width: 100%; display: flex; gap: 5px; }
+            .report-controls select { flex: 1; }
         }
 
         /* Monthly Report Section */
@@ -52,6 +55,7 @@
         }
         .report-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         .report-header h3 { margin: 0; font-size: 18px; color: #444; }
+        .report-controls { display: flex; gap: 10px; }
 
         /* Filters */
         .filters { margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; background: #eee; padding: 10px; border-radius: 5px; }
@@ -118,8 +122,17 @@
     <div id="monthlySection">
         <div class="report-header">
             <h3>月別レポート</h3>
-            <select id="monthlyYearSelect" onchange="renderMonthlyTable()">
+            <div class="report-controls">
+                <select id="monthlyYearSelect" onchange="renderMonthlyTable()">
+                    </select>
+                <select id="monthlyTypeFilter" onchange="renderMonthlyTable()">
+                    <option value="all">全ての分類</option>
+                    <option value="TC">通販/TC注文</option>
+                    <option value="STORE">店舗購入</option>
+                    <option value="EVENT">大会参加</option>
+                    <option value="USE">ポイント利用</option>
                 </select>
+            </div>
         </div>
         <table class="monthly-table">
             <thead>
@@ -136,7 +149,7 @@
     </div>
 
     <div class="filters">
-        <label>履歴絞り込み:</label>
+        <label>履歴リスト絞り込み:</label>
         <select id="yearFilter" onchange="applyFilters()">
             <option value="all">全ての期間</option>
         </select>
@@ -254,8 +267,12 @@
 
     // 月別テーブルの描画
     function renderMonthlyTable() {
-        const select = document.getElementById('monthlyYearSelect');
-        const year = parseInt(select.value);
+        const yearSelect = document.getElementById('monthlyYearSelect');
+        const typeSelect = document.getElementById('monthlyTypeFilter');
+        
+        const year = parseInt(yearSelect.value);
+        const type = typeSelect.value;
+        
         if (isNaN(year)) return;
 
         // 1月〜12月の枠を作る
@@ -266,7 +283,12 @@
 
         // 該当年のデータを集計
         allData.forEach(d => {
-            if (d.year === year) {
+            // 年の一致確認
+            const isYearMatch = d.year === year;
+            // 分類の一致確認 (allなら全てOK)
+            const isTypeMatch = type === 'all' || d.type === type;
+
+            if (isYearMatch && isTypeMatch) {
                 if (d.points > 0) {
                     monthlyData[d.month].gained += d.points;
                 } else {
@@ -282,9 +304,7 @@
         for(let i=1; i<=12; i++) {
             const m = monthlyData[i];
             const net = m.gained - m.used;
-            // データが全くない月は薄く表示するか、そのまま表示するか（ここではそのまま表示）
             
-            // 0の場合はグレー表示にするためのクラス制御などをしても良いがシンプルに実装
             const tr = document.createElement('tr');
             
             const netClass = net > 0 ? 'plus' : (net < 0 ? 'minus' : '');
@@ -335,11 +355,10 @@
                     currentRecord.expiryDate = line;
                 } else {
                     pushRecord(currentRecord);
-                    // month（月）を追加で保存
                     currentRecord = { 
                         date: line, 
                         year: parseInt(dateMatch[1]), 
-                        month: parseInt(dateMatch[2]), // 月を追加
+                        month: parseInt(dateMatch[2]), 
                         orderId: '', 
                         pointsStr: '', 
                         remarks: '', 
